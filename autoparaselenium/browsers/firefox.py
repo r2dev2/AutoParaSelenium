@@ -3,7 +3,7 @@ from pathlib import Path
 import setup_utils as su
 from selenium import webdriver
 
-pwd = Path(".") / "drivers"
+from autoparaselenium.models import Extension
 
 
 class FirefoxDriver(webdriver.Firefox):
