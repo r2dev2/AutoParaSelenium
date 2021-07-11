@@ -10,7 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
 import autoparaselenium.setup_utils as su
-from autoparaselenium.models import Conf, Extension
+from autoparaselenium.models import Conf
 
 
 class Popen(sb.Popen):
@@ -49,8 +49,8 @@ class ChromeDriver(webdriver.Chrome):
             self.quit()
 
 
-def get_selenium(pwd: Path, display: bool = False) -> webdriver.Chrome:
-    options = __get_options(display)
+def get_selenium(pwd: Path, conf: Conf) -> webdriver.Chrome:
+    options = __get_options(conf)
     browser = ChromeDriver(
         executable_path=pwd / __platform_drivers[su.platform], options=options
     )
@@ -63,18 +63,16 @@ def setup_driver(pwd) -> None:
         os.chmod(pwd / "chromedriver", stat.S_IEXEC)
 
 
-def __get_options(display: bool) -> Options:
+def __get_options(conf: Conf) -> Options:
     options = Options()
-    if not display:
+    if conf.headless and all(ext.chrome is None for ext in conf.extensions):
         options.add_argument("--no-sandbox")
-    return options
-    options.add_extension("dist/chrome/LiveTL-integration.zip")
-    # options.add_extension(str(Path(".").resolve() / "dist" /"chrome" / "LiveTL.zip"))
-    if enable_headless:
-        # options.add_argument("--disable-gpu")
-        options.add_argument("--no-sandbox")
-        if not display:
-            options.add_argument("--headless")
+        options.add_argument("--headless")
+
+    for ext in conf.extensions:
+        if ext.chrome is not None:
+            options.add_extension(ext.chrome)
+
     return options
 
 

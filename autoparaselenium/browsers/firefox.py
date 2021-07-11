@@ -27,20 +27,24 @@ def setup_driver(pwd: Path) -> None:
     __setup_driver(pwd)
 
 
-def get_selenium(pwd: Path, display: bool = False) -> webdriver.Firefox:
+def get_selenium(pwd: Path, conf: Conf) -> webdriver.Firefox:
     fp = webdriver.FirefoxProfile()
     fp.DEFAULT_PREFERENCES["frozen"]["xpinstall.signatures.required"] = False
+
     options = webdriver.FirefoxOptions()
-    options.headless = not display
+    options.headless = conf.headless
+
     browser = FirefoxDriver(
         executable_path=pwd / __platform_drivers[su.platform],
         firefox_profile=fp,
         options=options,
     )
+
+    for ext in conf.extensions:
+        if ext.firefox:
+            browser.install_addon(ext.firefox, True)
+
     return browser
-    browser.install_addon(
-        str(Path(".").resolve() / "dist" / "firefox" / "LiveTL.xpi"), True
-    )
 
 
 __platform_drivers = {
