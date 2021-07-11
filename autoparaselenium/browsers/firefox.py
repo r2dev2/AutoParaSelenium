@@ -1,9 +1,11 @@
+from contextlib import suppress
+from functools import partial
 from pathlib import Path
 
-import setup_utils as su
 from selenium import webdriver
 
-from autoparaselenium.models import Extension
+import autoparaselenium.setup_utils as su
+from autoparaselenium.models import Conf, Extension
 
 
 class FirefoxDriver(webdriver.Firefox):
@@ -17,38 +19,39 @@ class FirefoxDriver(webdriver.Firefox):
             super().quit()
 
     def __del__(self):
-        self.quit()
+        with suppress(Exception):
+            self.quit()
 
 
-def setup_driver() -> None:
-    __setup_driver()
+def setup_driver(pwd: Path) -> None:
+    __setup_driver(pwd)
 
 
-# FIXME display option doesn't do anything right now
-def get_selenium(display: bool = False) -> webdriver.Firefox:
+def get_selenium(pwd: Path, display: bool = False) -> webdriver.Firefox:
     fp = webdriver.FirefoxProfile()
     fp.DEFAULT_PREFERENCES["frozen"]["xpinstall.signatures.required"] = False
     options = webdriver.FirefoxOptions()
     options.headless = not display
     browser = FirefoxDriver(
-        executable_path=__platform_drivers[su.platform],
+        executable_path=pwd / __platform_drivers[su.platform],
         firefox_profile=fp,
         options=options,
     )
+    return browser
     browser.install_addon(
         str(Path(".").resolve() / "dist" / "firefox" / "LiveTL.xpi"), True
     )
-    return browser
 
 
 __platform_drivers = {
-    "win": pwd / "geckodriver.exe",
-    "darwin": pwd / "geckodriver",
-    "linux": pwd / "geckodriver",
+    "win": "geckodriver.exe",
+    "darwin": "geckodriver",
+    "linux": "geckodriver",
 }
 
 
-__setup_driver = su.setup_driver(
+__setup_driver = partial(
+    su.setup_driver,
     {
         "win": [
             "https://github.com/mozilla/geckodriver/releases"
@@ -68,8 +71,3 @@ __setup_driver = su.setup_driver(
     },
     __platform_drivers,
 )
-
-
-if __name__ == "__main__":
-    setup_driver()
-    web = get_selenium()

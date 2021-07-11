@@ -2,24 +2,24 @@ import os
 import stat
 import subprocess as sb
 import sys
+from contextlib import suppress
+from functools import partial
 from pathlib import Path
 
-import setup_utils as su
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 
-pwd = Path(".") / "drivers"
-platform = su.platform
-
-enable_headless = False
+import autoparaselenium.setup_utils as su
+from autoparaselenium.models import Conf, Extension
 
 
 class Popen(sb.Popen):
     """
-    Suppress chromedriver output on windows
+    Suppress chromedriver output on winblows
     """
 
     def __init__(self, *args, **kwargs):
+        # Flags needed to suppress chromedriver output on winblows
         if sys.platform[:3] == "win":
             kwargs = {
                 "stdin": sb.PIPE,
@@ -45,26 +45,29 @@ class ChromeDriver(webdriver.Chrome):
             super().quit()
 
     def __del__(self):
-        self.quit()
+        with suppress(Exception):
+            self.quit()
 
 
-def get_selenium(display: bool = False) -> webdriver.Chrome:
+def get_selenium(pwd: Path, display: bool = False) -> webdriver.Chrome:
     options = __get_options(display)
     browser = ChromeDriver(
-        executable_path=__platform_drivers[su.platform], options=options
+        executable_path=pwd / __platform_drivers[su.platform], options=options
     )
     return browser
 
 
-def setup_driver() -> None:
-    __setup_driver()
+def setup_driver(pwd) -> None:
+    __setup_driver(pwd)
     if (pwd / "chromedriver").exists():
         os.chmod(pwd / "chromedriver", stat.S_IEXEC)
 
 
-# FIXME --headless results in bugs
 def __get_options(display: bool) -> Options:
     options = Options()
+    if not display:
+        options.add_argument("--no-sandbox")
+    return options
     options.add_extension("dist/chrome/LiveTL-integration.zip")
     # options.add_extension(str(Path(".").resolve() / "dist" /"chrome" / "LiveTL.zip"))
     if enable_headless:
@@ -76,15 +79,15 @@ def __get_options(display: bool) -> Options:
 
 
 __platform_drivers = {
-    "win": pwd / "chromedriver.exe",
-    "darwin": pwd / "chromedriver",
-    "linux": pwd / "chromedriver",
+    "win": "chromedriver.exe",
+    "darwin": "chromedriver",
+    "linux": "chromedriver",
 }
 
-# 88.0.4324.27 in beta
-version = "87.0.4280.88"
+version = "91.0.4472.101"
 
-__setup_driver = su.setup_driver(
+__setup_driver = partial(
+    su.setup_driver,
     {
         "win": [
             "https://chromedriver.storage.googleapis.com"
@@ -107,8 +110,3 @@ __setup_driver = su.setup_driver(
     },
     __platform_drivers,
 )
-
-
-if __name__ == "__main__":
-    setup_driver()
-    web = get_selenium()

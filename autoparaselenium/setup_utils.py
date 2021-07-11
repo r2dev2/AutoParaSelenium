@@ -6,7 +6,7 @@ from zipfile import ZipFile
 
 import requests
 
-pwd = Path(".") / "drivers"
+# delete 32 of win32 and linux32
 platform = sys.platform.replace("32", "")
 
 
@@ -33,18 +33,11 @@ def __touch(location: Path) -> None:
     location.touch()
 
 
-def setup_driver(platform_install, platform_drivers) -> Callable[[], None]:
-    def inner() -> None:
-        if not __is_present(platform_drivers):
-            __download_and_extract(*platform_install[platform])
-
-    return inner
+def setup_driver(platform_install, platform_drivers, pwd: Path) -> None:
+    if not Path(pwd / platform_drivers[platform]).exists():
+        __download_and_extract(*platform_install[platform], pwd)
 
 
-def __is_present(platform_drivers):
-    return platform_drivers[platform].exists()
-
-
-def __download_and_extract(url: str, extract: Callable[[str, str], None]) -> None:
+def __download_and_extract(url: str, extract: Callable[[str, str], None], pwd: Path) -> None:
     download(url, pwd / "temp")
     extract(pwd / "temp", pwd)
