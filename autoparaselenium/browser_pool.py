@@ -2,6 +2,8 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from queue import Queue
 
+from selenium import webdriver
+
 from autoparaselenium.models import Conf
 from autoparaselenium.browsers import chrome, firefox
 
@@ -25,7 +27,8 @@ class BrowserPool:
         return self.__get_queue(browser).get(browser)
 
 
-    def release(self, browser, driver):
+    def release(self, driver):
+        browser = chrome if isinstance(driver, webdriver.Chrome) else firefox
         self.__get_queue(browser).put(driver)
 
 
