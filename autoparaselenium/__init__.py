@@ -1,7 +1,6 @@
+import itertools as it
 from functools import partial, wraps
-from typing import List, Optional
-
-import pytest
+from typing import Iterable, List, Optional
 
 from autoparaselenium.browsers import chrome, firefox
 from autoparaselenium.browser_pool import BrowserPool
@@ -9,6 +8,7 @@ from autoparaselenium.models import Conf, Extension
 
 
 _browser_pool: Optional[BrowserPool] = None
+all_ = [chrome, firefox]
 
 
 def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers", threads=1):
@@ -24,23 +24,34 @@ def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir=
     _browser_pool = BrowserPool(conf, threads)
 
 
-@pytest.mark.skip(reason="this isn't a test")
-def test(browser_or_test):
+def run_on(*browsers):
+    browsers = [*browsers]
+
+    if not browsers:
+        raise TypeError("Please specify a browser or browser list to run on")
+
+    if isinstance(browsers[0], Iterable):
+        browsers = [*it.chain(*browsers)]
+
     # if wrapper called with browser argument
-    if browser_or_test is firefox or browser_or_test is chrome:
-        return partial(__wrap_test, browser_or_test)
+    if browsers and browsers[0] is firefox or browsers[0] is chrome:
+        return partial(__wrap_test, browsers[0])
 
-    # Run on both firefox and chrome
-    to_run = [*map(partial(__wrap_test, test=browser_or_test), [chrome, firefox])]
 
-    def inner():
-        for test_ in to_run:
-            test_()
+    def wrapper(test):
+        # Run on both firefox and chrome
+        to_run = [*map(partial(__wrap_test, test=test), browsers)]
 
-    inner.__name__ = browser_or_test.__name__
-    inner.__doc__ = browser_or_test.__doc__
+        def inner():
+            for test_ in to_run:
+                test_()
 
-    return inner
+        inner.__name__ = browser_or_test.__name__
+        inner.__doc__ = browser_or_test.__doc__
+
+        return inner
+
+    return wrapper
 
 
 def __wrap_test(browser, test):

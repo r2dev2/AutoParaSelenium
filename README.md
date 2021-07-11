@@ -17,7 +17,7 @@ pip install autoparaselenium
 The API is very simple
 
 ```python
-from autoparaselenium import configure, chrome, firefox, test, Extension
+from autoparaselenium import configure, chrome, firefox, run_on, all_, Extension
 
 # All parameters are optional, but still call it once before everything
 configure(
@@ -30,15 +30,15 @@ configure(
     selenium_dir="./drivers"
 )
 
-@test
+@run_on(all_)
 def test_both_firefox_and_chrome(web):
     ...
 
-@test(firefox)
+@run_on(firefox)
 def test_firefox_only(web):
     ...
 
-@test(chrome)
+@run_on(chrome)
 def test_chrome_only(web):
     ...
 ```
