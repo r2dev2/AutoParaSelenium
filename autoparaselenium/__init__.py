@@ -33,10 +33,8 @@ def run_on(*browsers):
     if isinstance(browsers[0], Iterable):
         browsers = [*it.chain(*browsers)]
 
-    # if wrapper called with browser argument
-    if browsers and browsers[0] is firefox or browsers[0] is chrome:
+    if len(browsers) == 1:
         return partial(__wrap_test, browsers[0])
-
 
     def wrapper(test):
         # Run on both firefox and chrome
@@ -46,8 +44,8 @@ def run_on(*browsers):
             for test_ in to_run:
                 test_()
 
-        inner.__name__ = browser_or_test.__name__
-        inner.__doc__ = browser_or_test.__doc__
+        inner.__name__ = test.__name__
+        inner.__doc__ = test.__doc__
 
         return inner
 
