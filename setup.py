@@ -11,6 +11,11 @@ except:
 try:
     with open("requirements.txt", "r") as reqs:
         requirements = reqs.read().split("\n")
+    links = [
+        req.split("@")[-1].strip()
+        for req in requirements
+        if "@" in req
+    ]
 except:
     requirements = ""
 
@@ -40,4 +45,5 @@ setuptools.setup(
     ],
     python_requires=">=3.5",
     install_requires=requirements,
+    dependency_links=links
 )
