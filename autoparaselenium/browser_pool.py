@@ -38,3 +38,10 @@ class BrowserPool:
 
     def __open_browser(self, browser):
         return browser.get_selenium(self._conf.selenium_dir, self._conf)
+
+
+    def clean_up(self):
+        for q in [self._chromes, self._firefoxes]:
+            while not q.empty():
+                driver = q.get()
+                driver.quit()

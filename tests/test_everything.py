@@ -30,7 +30,7 @@ def test_both(web):
 
 @run_on(chrome, firefox)
 def test_yt(web):
-    log("Starting yt", time.time() - beg)
+    log("Starting yt v1", time.time() - beg)
     web.get("https://youtube.com")
     time.sleep(3)
 
@@ -38,7 +38,33 @@ def test_yt(web):
 
     assert web.title == expected_title
 
-    log("Finishing yt", time.time() - beg)
+    log("Finishing yt v1", time.time() - beg)
+
+
+@run_on(chrome, firefox)
+def test_ytv2(web):
+    log("Starting yt v2", time.time() - beg)
+    web.get("https://youtube.com")
+    time.sleep(3)
+
+    expected_title = "YouTube"
+
+    assert web.title == expected_title
+
+    log("Finishing yt v2", time.time() - beg)
+
+
+@run_on(chrome, firefox)
+def test_ytv3(web):
+    log("Starting yt v3", time.time() - beg)
+    web.get("https://youtube.com")
+    time.sleep(3)
+
+    expected_title = "YouTube"
+
+    assert web.title == expected_title
+
+    log("Finishing yt v3", time.time() - beg)
 
 
 @run_on(firefox)

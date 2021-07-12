@@ -10,6 +10,8 @@ from autoparaselenium.models import Conf, Extension
 _browser_pool: Optional[BrowserPool] = None
 all_ = [chrome, firefox]
 
+_test_count = 0 # manual reference counting since threading borks with destructors
+
 
 def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers", threads=1):
     global _browser_pool
@@ -29,6 +31,7 @@ def run_on(*browsers):
 
     if not browsers:
         raise TypeError("Please specify a browser or browser list to run on")
+
 
     if isinstance(browsers[0], Iterable):
         browsers = [*it.chain(*browsers)]
@@ -53,16 +56,26 @@ def run_on(*browsers):
 
 
 def __wrap_test(browser, test):
+    global _test_count
+
+    _test_count += 1
+
     if _browser_pool is None:
         raise RuntimeError("Please call autoparaselenium.configure() before creating tests")
 
     def inner():
+        global _test_count
+
         try:
+            _test_count -= 1
             driver = _browser_pool.acquire(browser)
             driver.get("data:,") # initialize driver website
             test(driver)
         finally:
             _browser_pool.release(driver)
+
+            if _test_count == 0:
+                _browser_pool.clean_up()
 
     inner.__name__ = f"{test.__name__}__{'chrome' if browser is chrome else 'firefox'}"
     inner.__doc__ = test.__doc__
