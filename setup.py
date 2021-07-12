@@ -11,11 +11,6 @@ except:
 try:
     with open("requirements.txt", "r") as reqs:
         requirements = reqs.read().split("\n")
-    links = [
-        req.split("@")[-1].strip()
-        for req in requirements
-        if "@" in req
-    ]
 except:
     requirements = ""
 
@@ -43,7 +38,6 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     install_requires=requirements,
-    dependency_links=links
 )
