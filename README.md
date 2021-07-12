@@ -2,8 +2,6 @@
 
 A library to make parallel selenium tests that automatically download and setup webdrivers
 
-This is a WIP
-
 ## Usage
 
 ### Installation
@@ -17,6 +15,10 @@ pip install autoparaselenium
 The API is very simple
 
 ```python
+from typing import Union
+
+from selenium import webdriver
+
 from autoparaselenium import configure, chrome, firefox, run_on, all_, Extension
 
 # All parameters are optional, but still call it once before everything
@@ -31,18 +33,22 @@ configure(
 )
 
 @run_on(all_)
-def test_both_firefox_and_chrome(web):
+def test_both_firefox_and_chrome(web: Union[webdriver.Firefox, webdriver.Chrome]):
     ...
 
 @run_on(firefox)
-def test_firefox_only(web):
+def test_firefox_only(web: webdriver.Firefox):
     ...
 
 @run_on(chrome)
-def test_chrome_only(web):
+def test_chrome_only(web: webdriver.Chrome):
     ...
 ```
 
 ### Running 
 
-Use `pytest -n PROC` where `PROC` is the number of parallel threads
+Use `pytest --tests-per-worker PROC` where `PROC` is the number of parallel threads
+
+## Credits
+
+* [pytest-parallel python3.9 support fork](https://github.com/andni233/pytest-parallel/tree/python39-support)
