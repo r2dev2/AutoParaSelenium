@@ -1,4 +1,7 @@
 import itertools as it
+import sys
+import time
+from concurrent.futures import ThreadPoolExecutor
 from functools import partial, wraps
 from typing import Iterable, List, Optional
 
@@ -44,8 +47,12 @@ def run_on(*browsers):
         to_run = [*map(partial(__wrap_test, test=test), browsers)]
 
         def inner():
-            for test_ in to_run:
-                test_()
+            if 1 or "--tests-per-worker" in sys.argv:
+                with ThreadPoolExecutor(max_workers=len(to_run)) as pool:
+                    pool.map(lambda test_: test_(), to_run)
+            else:
+                for test_ in to_run:
+                    test_()
 
         inner.__name__ = test.__name__
         inner.__doc__ = test.__doc__
@@ -75,7 +82,9 @@ def __wrap_test(browser, test):
             _browser_pool.release(driver)
 
             if _test_count == 0:
+                time.sleep(0.05) # idk but seems like it needs a bit of time before you can close the pool
                 _browser_pool.clean_up()
+
 
     inner.__name__ = f"{test.__name__}__{'chrome' if browser is chrome else 'firefox'}"
     inner.__doc__ = test.__doc__
