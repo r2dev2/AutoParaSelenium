@@ -1,4 +1,5 @@
 import itertools as it
+import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -16,7 +17,7 @@ all_ = [chrome, firefox]
 _test_count = 0 # manual reference counting since threading borks with destructors
 
 
-def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers", threads=1):
+def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers"):
     global _browser_pool
 
     if _browser_pool is not None:
@@ -26,7 +27,7 @@ def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir=
     for browser in [chrome, firefox]:
         browser.setup_driver(conf.selenium_dir)
 
-    _browser_pool = BrowserPool(conf, threads)
+    _browser_pool = BrowserPool(conf, __get_threads())
 
 
 def run_on(*browsers):
@@ -47,7 +48,7 @@ def run_on(*browsers):
         to_run = [*map(partial(__wrap_test, test=test), browsers)]
 
         def inner():
-            if 1 or "--tests-per-worker" in sys.argv:
+            if "--tests-per-worker" in sys.argv:
                 with ThreadPoolExecutor(max_workers=len(to_run)) as pool:
                     pool.map(lambda test_: test_(), to_run)
             else:
@@ -90,3 +91,16 @@ def __wrap_test(browser, test):
     inner.__doc__ = test.__doc__
 
     return inner
+
+
+def __get_threads(args=sys.argv):
+    if "--tests-per-worker" not in args:
+        return 1
+    tests_per_worker_idx = args.index("--tests-per-worker")
+    next_arg = "".join(args[tests_per_worker_idx + 1: tests_per_worker_idx + 2])
+    if next_arg == "auto":
+        return os.cpu_count() // 2 + 1
+    try:
+        return int("0" + next_arg) // 2 + 1
+    except ValueError:
+        return 1

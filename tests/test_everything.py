@@ -5,7 +5,7 @@ from selenium import webdriver
 from autoparaselenium import configure, chrome, firefox, run_on
 
 
-configure(headless=False, threads=2)
+configure(headless=False)
 
 def log(*args):
     with open("log", "a+") as fout:
