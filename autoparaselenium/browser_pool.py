@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from threading import Lock
 from queue import Queue
 
@@ -37,7 +38,10 @@ class BrowserPool:
 
 
     def __open_browser(self, browser):
-        return browser.get_selenium(self._conf.selenium_dir, self._conf)
+        driver = browser.get_selenium(self._conf.selenium_dir, self._conf)
+        with suppress(Exception):
+            driver.switch_to.window("1")
+        return driver
 
 
     def clean_up(self):
