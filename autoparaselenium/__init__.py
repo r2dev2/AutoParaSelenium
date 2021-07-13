@@ -85,7 +85,7 @@ def __wrap_test(browser, test):
                 _browser_pool.release(driver)
 
             if _test_count == 0:
-                time.sleep(0.05) # idk but seems like it needs a bit of time before you can close the pool
+                time.sleep(0.10) # idk but seems like it needs a bit of time before you can close the pool
                 _browser_pool.clean_up()
 
 
