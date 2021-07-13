@@ -3,6 +3,7 @@ import os
 import sys
 import time
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import suppress
 from functools import partial, wraps
 from typing import Iterable, List, Optional
 
@@ -80,7 +81,8 @@ def __wrap_test(browser, test):
             driver.get("data:,") # initialize driver website
             test(driver)
         finally:
-            _browser_pool.release(driver)
+            with suppress(Exception):
+                _browser_pool.release(driver)
 
             if _test_count == 0:
                 time.sleep(0.05) # idk but seems like it needs a bit of time before you can close the pool
