@@ -50,7 +50,7 @@ def run_on(*browsers):
         def inner():
             if "--tests-per-worker" in sys.argv:
                 with ThreadPoolExecutor(max_workers=len(to_run)) as pool:
-                    pool.map(lambda test_: test_(), to_run)
+                    [*pool.map(lambda test_: test_(), to_run)]
             else:
                 for test_ in to_run:
                     test_()
