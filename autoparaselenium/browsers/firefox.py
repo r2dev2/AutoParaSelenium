@@ -1,3 +1,4 @@
+import atexit
 from contextlib import suppress
 from functools import partial
 from pathlib import Path
@@ -12,6 +13,7 @@ class FirefoxDriver(webdriver.Firefox):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.has_quit = False
+        atexit.register(self.quit)
 
     def quit(self):
         if not self.has_quit:

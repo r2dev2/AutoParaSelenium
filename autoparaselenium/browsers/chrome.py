@@ -1,3 +1,4 @@
+import atexit
 import os
 import stat
 import subprocess as sb
@@ -38,6 +39,7 @@ class ChromeDriver(webdriver.Chrome):
         super().__init__(*args, **kwargs)
         sb.Popen = old_popen
         self.has_quit = False
+        atexit.register(self.quit)
 
     def quit(self):
         if not self.has_quit:
