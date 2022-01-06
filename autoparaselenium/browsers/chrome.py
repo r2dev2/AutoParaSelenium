@@ -84,7 +84,7 @@ __platform_drivers = {
     "linux": "chromedriver",
 }
 
-version = "95.0.4638.17"
+version = "97.0.4692.71"
 
 __setup_driver = partial(
     su.setup_driver,
