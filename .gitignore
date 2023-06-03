@@ -6,3 +6,5 @@ dist/
 drivers/
 *.log
 log
+venv/
+test.py
