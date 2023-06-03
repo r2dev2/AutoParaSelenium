@@ -56,22 +56,23 @@ __platform_drivers = {
 }
 
 
+version = "0.30.0"
 __setup_driver = partial(
     su.setup_driver,
     {
         "win": [
             "https://github.com/mozilla/geckodriver/releases"
-            "/download/v0.28.0/geckodriver-v0.28.0-win64.zip",
+            f"/download/v{version}/geckodriver-v{version}-win64.zip",
             su.unzip,
         ],
         "darwin": [
             "https://github.com/mozilla/geckodriver/releases/"
-            "download/v0.28.0/geckodriver-v0.28.0-macos.tar.gz",
+            f"download/v{version}/geckodriver-v{version}-macos.tar.gz",
             su.untar,
         ],
         "linux": [
             "https://github.com/mozilla/geckodriver/releases"
-            "/download/v0.28.0/geckodriver-v0.28.0-linux64.tar.gz",
+            f"/download/v{version}/geckodriver-v{version}-linux64.tar.gz",
             su.untar,
         ],
     },

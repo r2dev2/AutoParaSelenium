@@ -70,7 +70,8 @@ def setup_driver(pwd: Path) -> None:
             f"/LATEST_RELEASE_{chrome_version}"
         )
         version = r.text.strip()
-        os.remove(pwd / "chromedriver")
+        if (pwd / "chromedriver").exists():
+            os.remove(pwd / "chromedriver")
         __setup_driver(version)(pwd)
         os.chmod(pwd / "chromedriver", stat.S_IEXEC)
 
