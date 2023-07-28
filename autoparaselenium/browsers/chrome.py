@@ -93,8 +93,9 @@ def setup_driver(pwd: Path) -> None:
                     su.unzip,
                 ]
                 for entry in (
-                    r.json()["milestones"][str(chrome_version)]
-                    ["downloads"]["chromedriver"]
+                    r.json()["milestones"][str(chrome_version)]["downloads"][
+                        "chromedriver"
+                    ]
                 )
             }
             if (pwd / "chromedriver").exists():

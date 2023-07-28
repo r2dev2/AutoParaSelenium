@@ -7,18 +7,19 @@ from contextlib import suppress
 from functools import partial, wraps
 from typing import Iterable, List, Optional
 
-from autoparaselenium.browsers import chrome, firefox
 from autoparaselenium.browser_pool import BrowserPool
+from autoparaselenium.browsers import chrome, firefox
 from autoparaselenium.models import Conf, Extension
-
 
 _browser_pool: Optional[BrowserPool] = None
 all_ = [chrome, firefox]
 
-_test_count = 0 # manual reference counting since threading borks with destructors
+_test_count = 0  # manual reference counting since threading borks with destructors
 
 
-def configure(*_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers"):
+def configure(
+    *_, extensions: List[Extension] = [], headless=True, selenium_dir="drivers"
+):
     global _browser_pool
 
     if _browser_pool is not None:
@@ -36,7 +37,6 @@ def run_on(*browsers):
 
     if not browsers:
         raise TypeError("Please specify a browser or browser list to run on")
-
 
     if isinstance(browsers[0], Iterable):
         browsers = [*it.chain(*browsers)]
@@ -70,7 +70,9 @@ def __wrap_test(browser, test):
     _test_count += 1
 
     if _browser_pool is None:
-        raise RuntimeError("Please call autoparaselenium.configure() before creating tests")
+        raise RuntimeError(
+            "Please call autoparaselenium.configure() before creating tests"
+        )
 
     def inner():
         global _test_count
@@ -78,16 +80,17 @@ def __wrap_test(browser, test):
         try:
             _test_count -= 1
             driver = _browser_pool.acquire(browser)
-            driver.get("data:,") # initialize driver website
+            driver.get("data:,")  # initialize driver website
             test(driver)
         finally:
             with suppress(Exception):
                 _browser_pool.release(driver)
 
             if _test_count == 0:
-                time.sleep(0.10) # idk but seems like it needs a bit of time before you can close the pool
+                time.sleep(
+                    0.10
+                )  # idk but seems like it needs a bit of time before you can close the pool
                 _browser_pool.clean_up()
-
 
     inner.__name__ = f"{test.__name__}__{'chrome' if browser is chrome else 'firefox'}"
     inner.__doc__ = test.__doc__
@@ -99,7 +102,7 @@ def __get_threads(args=sys.argv):
     if "--tests-per-worker" not in args:
         return 1
     tests_per_worker_idx = args.index("--tests-per-worker")
-    next_arg = "".join(args[tests_per_worker_idx + 1: tests_per_worker_idx + 2])
+    next_arg = "".join(args[tests_per_worker_idx + 1 : tests_per_worker_idx + 2])
     if next_arg == "auto":
         return os.cpu_count() // 2 + 1
     try:

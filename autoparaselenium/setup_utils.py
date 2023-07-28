@@ -44,6 +44,8 @@ def setup_driver(platform_install, platform_drivers, pwd: Path) -> None:
         )
 
 
-def __download_and_extract(url: str, extract: Callable[[str, str], None], pwd: Path) -> None:
+def __download_and_extract(
+    url: str, extract: Callable[[str, str], None], pwd: Path
+) -> None:
     download(url, pwd / "temp")
     extract(pwd / "temp", pwd)
