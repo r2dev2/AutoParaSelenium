@@ -37,6 +37,12 @@ def setup_driver(platform_install, platform_drivers, pwd: Path) -> None:
     if not Path(pwd / platform_drivers[platform]).exists():
         __download_and_extract(*platform_install[platform], pwd)
 
+    # sometimes webdriver is nested in a folder after zip extraction
+    if not Path(pwd / platform_drivers[platform]).exists():
+        (pwd / platform_drivers[platform]).hardlink_to(
+            next(pwd.rglob(platform_drivers[platform]))
+        )
+
 
 def __download_and_extract(url: str, extract: Callable[[str, str], None], pwd: Path) -> None:
     download(url, pwd / "temp")

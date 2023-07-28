@@ -65,14 +65,41 @@ def setup_driver(pwd: Path) -> None:
     chrome_version = __get_chrome_version()
     driver_version = __get_chromedriver_version(pwd)
     if driver_version is None or driver_version < chrome_version:
-        r = requests.get(
-            "https://chromedriver.storage.googleapis.com"
-            f"/LATEST_RELEASE_{chrome_version}"
-        )
-        version = r.text.strip()
-        if (pwd / "chromedriver").exists():
-            os.remove(pwd / "chromedriver")
-        __setup_driver(version)(pwd)
+        print(driver_version, chrome_version)
+        # chromedriver changed its LATEST_RELEASE_{version} api and download link
+        # for chrome >= 115
+        if chrome_version < 115:
+            r = requests.get(
+                "https://chromedriver.storage.googleapis.com"
+                f"/LATEST_RELEASE_{chrome_version}"
+            )
+            version = r.text.strip()
+            if (pwd / "chromedriver").exists():
+                os.remove(pwd / "chromedriver")
+            __setup_driver_old(version)(pwd)
+        else:
+            r = requests.get(
+                "https://googlechromelabs.github.io/chrome-for-testing/"
+                "latest-versions-per-milestone-with-downloads.json"
+            )
+            supported_platforms = {
+                "linux64": "linux",
+                "mac-x64": "darwin",
+                "win64": "win",
+            }
+            downloads = {
+                supported_platforms.get(entry["platform"]): [
+                    entry["url"],
+                    su.unzip,
+                ]
+                for entry in (
+                    r.json()["milestones"][str(chrome_version)]
+                    ["downloads"]["chromedriver"]
+                )
+            }
+            if (pwd / "chromedriver").exists():
+                os.remove(pwd / "chromedriver")
+            su.setup_driver(downloads, __platform_drivers, pwd)
         os.chmod(pwd / "chromedriver", stat.S_IEXEC)
 
 
@@ -128,7 +155,7 @@ __platform_binaries = {
     "linux": "/usr/bin/google-chrome",
 }
 
-__setup_driver = lambda version: partial(
+__setup_driver_old = lambda version: partial(
     su.setup_driver,
     {
         "win": [
