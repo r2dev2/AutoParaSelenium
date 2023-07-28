@@ -65,7 +65,6 @@ def setup_driver(pwd: Path) -> None:
     chrome_version = __get_chrome_version()
     driver_version = __get_chromedriver_version(pwd)
     if driver_version is None or driver_version < chrome_version:
-        print(driver_version, chrome_version)
         # chromedriver changed its LATEST_RELEASE_{version} api and download link
         # for chrome >= 115
         if chrome_version < 115:

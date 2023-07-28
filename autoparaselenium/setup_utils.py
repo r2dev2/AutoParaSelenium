@@ -1,3 +1,4 @@
+import os
 import sys
 import tarfile
 from pathlib import Path
@@ -39,8 +40,9 @@ def setup_driver(platform_install, platform_drivers, pwd: Path) -> None:
 
     # sometimes webdriver is nested in a folder after zip extraction
     if not Path(pwd / platform_drivers[platform]).exists():
-        (pwd / platform_drivers[platform]).hardlink_to(
-            next(pwd.rglob(platform_drivers[platform]))
+        os.link(
+            next(pwd.rglob(platform_drivers[platform])),
+            pwd / platform_drivers[platform]
         )
 
 
